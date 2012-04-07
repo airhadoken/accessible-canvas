@@ -41,19 +41,49 @@ A11yMap.Rect = function(map, x1, y1, x2, y2) {
 				 .appendTo(map.mapElement)
 				 .data("a11yMapRect", this);
 	this.element = rj[0];
+	this.map = map;
 	return this;
 };
 
 A11yMap.Rect.prototype.move = function(x, y) {
 	var coords = this.element.getAttribute("coords").split(",");
-	x = (x || 0);
-	y = (y || 0);
 	$(coords).each(function(i){ coords[i] = +(coords[i]); }); //integer conversion
+	var minx = Math.min(coords[0], coords[2]);
+	var miny = Math.min(coords[1], coords[3]);
+	var maxx = Math.max(coords[0], coords[2]);
+	var maxy = Math.max(coords[1], coords[3]);
+	x = (x || 0);
+	if(x < -minx) x = -minx;
+	if(x + maxx >= +($(this.map.imgElement).width())) x = +($(this.map.imgElement).width())- maxx - 1;
+	y = (y || 0);
+	if(y < -miny) y = -miny;
+	if(y + maxy >= +($(this.map.imgElement).height())) y = +($(this.map.imgElement).height())- maxy - 1;
+	
 	coords[0] += x;
 	coords[1] += y;
 	coords[2] += x;
 	coords[3] += y;
 	this.element.setAttribute("coords", coords.join(","));
+};
+
+A11yMap.Rect.prototype.resize = function(w, h) {
+	var coords = this.element.getAttribute("coords").split(",");
+	w = (w || 0);
+	h = (h || 0);
+	$(coords).each(function(i){ coords[i] = +(coords[i]); }); //integer conversion
+	if(w < -coords[2]) w = -coords[2];
+	if(w + coords[2] >= +($(this.map.imgElement).width())) w = +($(this.map.imgElement).width())- coords[2] - 1;
+	if(h < -coords[3]) h = -coords[3];
+	if(h + coords[3] >= +($(this.map.imgElement).height())) h = +($(this.map.imgElement).height())- coords[3] - 1;
+	
+	coords[2] += w;
+	coords[3] += h;
+	this.element.setAttribute("coords", coords.join(","));	
+};
+
+A11yMap.Rect.prototype.remove = function() {
+	$(this.element).remove();
+	delete this;
 };
 
 A11yMap.prototype.rect = function(x1, x2, y1, y2) {
