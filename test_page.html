@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Accessible canvas test page</title>
+  <script type="text/javascript" src="jquery.js"></script>
+  <script type="text/javascript" src="map.js"></script>
+</head>
+<body>
+
+<canvas id="testcanvas" height="400" width="600"></canvas>
+<script type="text/javascript">
+
+var map = new A11yMap("test", $("#testcanvas")[0]);
+map.rect(200, 200, 250, 250);
+map.rect(300, 200, 350, 250);
+var context = $("#testcanvas")[0].getContext("2d");
+context.fillStyle= "rgb(127, 127, 127)";
+context.fillRect(0, 0, 600, 400);
+
+context.fillStyle = "yellow";
+context.fillRect(200, 200, 50, 50);
+
+$("#testcanvas").click(function(ev) {
+  if(ev.pageX - $(this).offset().left >= 200 
+     && ev.pageX - $(this).offset().left <= 250
+     && ev.pageY - $(this).offset().top >= 200
+     && ev.pageY - $(this).offset().top <= 250)
+  $(document.body).append("<div>click on yellow button registered</div>");
+});
+
+</script>
+
+
+</body>
+</html>

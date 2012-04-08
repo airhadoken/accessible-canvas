@@ -2,7 +2,7 @@
  * Accessibility Map for canvas
  * (C)2012 Bradley Momberger 
  * Licensed under the MIT license http://www.opensource.org/licenses/mit-license.php
- * @version 0.3
+ * @version 0.5
  * 
  * Notes:
  * This is a work in progress for dynamically creating an image map to sit on top of a canvas, so that UI elements implemented in the canvas can be navigated with keyboards or other assistive devices.
@@ -10,6 +10,7 @@
 
 window.A11yMap = function A11yMap(id, canvas) {
 	
+	var self = this;
 	var oldMap;
 	if((oldMap = $("map#" + id + "Map")).length > 0) {
 		return oldMap.data("a11yMap");
@@ -21,6 +22,11 @@ window.A11yMap = function A11yMap(id, canvas) {
 		.appendTo(document.body)
 		.attr("width", $(canvas).width())
 		.attr("height", $(canvas).height())
+		.click(function(ev){
+			ev.pageX += ( $(canvas).offset().left - self.imgElement.offsetLeft);
+			ev.pageY += ( $(canvas).offset().top - self.imgElement.offsetTop);
+			$(canvas).trigger(ev); 
+		})
 		.data("a11yMap", this)[0];
 
 	this.imgElement = $("<img></img>")
@@ -28,8 +34,12 @@ window.A11yMap = function A11yMap(id, canvas) {
 		.attr("useMap", "#" + id + "Map")
 		.attr("width", $(canvas).width())
 		.attr("height", $(canvas).height())
+		.attr("src","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=") //transparent 1x1
+		//.css({"position" : canvas ? "absolute" : "static",
+		//	  "top" : canvas ? $(canvas).offset().top + "px" : "0px",
+	//		  "left" : canvas ? $(canvas).offset().left + "px" : "0px" })
 		.appendTo(document.body)[0];
-	
+
 return this;	
 };
 
@@ -39,6 +49,15 @@ A11yMap.Rect = function(map, x1, y1, x2, y2) {
 				 .attr("href", "javascript://")
 				 .attr("tabindex", "0")
 				 .appendTo(map.mapElement)
+				 .keydown(function(ev){
+					 if(ev.target.tagName.toLowerCase() === "area" 
+						&& ev.keyCode === 13) {
+						 var nev = new $.Event("click");
+						 nev.pageX = map.imgElement.offsetLeft + (x1 + x2) / 2;
+						 nev.pageY = map.imgElement.offsetTop + (y1 + y2) / 2;
+						 $(ev.target).trigger(nev);
+					 }
+				 })
 				 .data("a11yMapRect", this);
 	this.element = rj[0];
 	this.map = map;

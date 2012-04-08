@@ -3,14 +3,15 @@ function(){
 	
 	var puppiesmap, kittiesmap;
 	var rect;
+	var $canvas; //for kittiesMap
 	beforeEach(function() {
 		if(!puppiesmap)
 			puppiesmap = new A11yMap("puppies");
 		
 		if(!kittiesmap) {
-			var canvas = $("<canvas width='600' height='400'></canvas>")
+			$canvas = $("<canvas width='600' height='400'></canvas>")
 							 .appendTo(document.body);
-			kittiesmap = new A11yMap("kitties", canvas);
+			kittiesmap = new A11yMap("kitties", $canvas);
 		}
 	});
 	
@@ -22,6 +23,13 @@ function(){
 				expect($("img#puppiesPane")).toExist();
 			});
 
+			it("adds appropriate properties to each map and image", function() {
+				expect(puppiesmap.mapElement.id).toBe("puppiesMap");
+				expect(puppiesmap.imgElement.id).toBe("puppiesPane");
+				expect($(puppiesmap.mapElement)).toHaveAttr("name", "puppiesMap");
+				expect($(puppiesmap.imgElement)).toHaveAttr("usemap", "#puppiesMap");
+			});
+					 
 			it("returns the existing map for an id when one exists", function(){
 				expect(new A11yMap("puppies")).toBe(puppiesmap); 
 			});
@@ -33,6 +41,22 @@ function(){
 				expect($("#kittiesPane")).toHaveAttr("height", 400);
 				expect($("#kittiesPane")).toHaveAttr("width", 600);
 			
+			});
+					 
+			it("creates event trigger pass-throughs to the canvas", function(){
+				var called = null;
+				$canvas.click(function(ev) { 
+					called = ev; 
+				});
+				var ck = new $.Event("click");
+				   ck.pageX = kittiesmap.imgElement.offsetLeft + 100;
+				   ck.pageY = kittiesmap.imgElement.offsetTop + 100;
+				$(kittiesmap.mapElement).trigger(ck);
+				expect(called).toBeTruthy();
+				//expect(called.offsetx).toBe(100);
+				//expect(called.offsety).toBe(100);
+				expect(called.pageX).toBe(100 + $canvas.offset().left);
+				expect(called.pageY).toBe(100 + $canvas.offset().top);
 			});
 		});
 				 
