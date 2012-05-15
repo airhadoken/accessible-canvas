@@ -182,6 +182,10 @@ jasmine.JQuery.matchersClass = {};
       return hasProperty(this.actual.attr(attributeName), expectedAttributeValue);
     },
 
+	toHaveCss: function(propertyName, expectedPropertyValue) {
+	  return this.actual.css(propertyName) == expectedPropertyValue;	
+	},
+
     toHaveId: function(id) {
       return this.actual.attr('id') == id;
     },

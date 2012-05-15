@@ -30,6 +30,11 @@ function(){
 				expect($(puppiesmap.imgElement)).toHaveAttr("usemap", "#puppiesMap");
 			});
 					 
+			it("adds necessary CSS to each map", function() {
+				expect($(kittiesmap.mapElement)).toHaveCss("height", "400px");
+				expect($(kittiesmap.mapElement)).toHaveCss("width", "600px");
+			});
+
 			it("returns the existing map for an id when one exists", function(){
 				expect(new A11yMap("puppies")).toBe(puppiesmap); 
 			});
@@ -80,6 +85,13 @@ function(){
 			});
 			it("sets the area coordinates when passed in", function() {
 				expect($("#kittiesMap area:first")).toHaveAttr("coords", "1,2,3,4");
+			});
+			it("sets the CSS of the area to match its coordinates", function() {
+				//expect($("#kittiesMap area:first")).toHaveCss("display", "block"); //always reports as inline
+				expect($("#kittiesMap area:first")).toHaveCss("top", "2px");
+				expect($("#kittiesMap area:first")).toHaveCss("left", "1px");
+				expect($("#kittiesMap area:first")).toHaveCss("width", "2px");
+				expect($("#kittiesMap area:first")).toHaveCss("height", "2px");
 			});
 		});
 	});

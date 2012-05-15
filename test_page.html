@@ -4,6 +4,24 @@
   <title>Accessible canvas test page</title>
   <script type="text/javascript" src="jquery.js"></script>
   <script type="text/javascript" src="map.js"></script>
+
+<style type="text/css">
+#testcanvas, #testcanvasPane {
+  position : absolute;
+  top : 10px;
+  left : 10px;
+}
+
+#testcanvasPane {
+  z-index : 10;
+}
+
+area:focus {
+  border : 3px solid #3333FF;
+}
+
+</style>
+
 </head>
 <body>
 

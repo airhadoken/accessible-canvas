@@ -20,6 +20,10 @@ window.A11yMap = function A11yMap(id, canvas) {
 		.attr("id", id + "Map")
 		.attr("name", id + "Map")
 		.appendTo(document.body)
+	    .css("position", "absolute")
+	    .css("display", "block")
+	    .css("width", $(canvas).width() + "px")
+	    .css("height", $(canvas).height() + "px")
 		.attr("width", $(canvas).width())
 		.attr("height", $(canvas).height())
 		.click(function(ev){
@@ -44,10 +48,18 @@ return this;
 };
 
 A11yMap.Rect = function(map, x1, y1, x2, y2) {
+    //if(x1 > x2) swap the Xs
+
 	var rj = $("<area shape='rect'></area>")
 				 .attr("coords", $.makeArray(arguments).slice(1,5).join(','))
 				 .attr("href", "javascript://")
 				 .attr("tabindex", "0")
+				 .css("display", "block")
+	             .css("position", "absolute")
+				 .css("left", Math.min(x1, x2) + "px")
+				 .css("top", Math.min(y1, y2) + "px")
+				 .css("height", Math.abs(y1 - y2) + "px")
+				 .css("width", Math.abs(x1 - x2) + "px")
 				 .appendTo(map.mapElement)
 				 .keydown(function(ev){
 					 if(ev.target.tagName.toLowerCase() === "area" 
