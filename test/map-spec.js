@@ -2,7 +2,7 @@ describe("map spec",
 function(){
 	
 	var puppiesmap, kittiesmap;
-	var rect;
+	var rect, circ;
 	var $canvas; //for kittiesMap
 	beforeEach(function() {
 		if(!puppiesmap)
@@ -63,6 +63,12 @@ function(){
 				expect(called.pageX).toBe(100 + $canvas.offset().left);
 				expect(called.pageY).toBe(100 + $canvas.offset().top);
 			});
+
+			it("puts the image and map into application-role container", function() {
+				expect($("#kittiesContainer")).toHaveAttr("role", "application");
+				expect($("#kittiesContainer #kittiesMap")).toExist();
+				expect($("#kittiesContainer #kittiesPane")).toExist();
+			});
 		});
 				 
 		describe("#rect", function(){
@@ -70,7 +76,7 @@ function(){
 				expect(typeof kittiesmap.rect).toBe("function");
 			});
 			beforeEach(function() {
-				rect = kittiesmap.rect(1, 2, 3, 4);//x1, y1, x2, y2
+				rect = kittiesmap.rect(1, 2, 3, 4, "foo");//x1, y1, x2, y2
 			});
 			afterEach(function(){
 				$(rect.element).remove();
@@ -92,6 +98,44 @@ function(){
 				expect($("#kittiesMap area:first")).toHaveCss("left", "1px");
 				expect($("#kittiesMap area:first")).toHaveCss("width", "2px");
 				expect($("#kittiesMap area:first")).toHaveCss("height", "2px");
+			});
+			it("sets the text on focus to the specified text", function() {
+				$("#kittiesMap area:first").focus();
+				expect($canvas.find("[aria-live]")).toHaveText("foo");
+			});
+		});
+
+		describe("#circ", function(){
+			it("has a prototype function #circ", function(){
+				expect(typeof kittiesmap.circ).toBe("function");
+			});
+			beforeEach(function() {
+				circ = kittiesmap.circ(3, 2, 1, "bar");//x1, y1, r
+			});
+			afterEach(function(){
+				$(circ.element).remove();
+			});
+			it("returns a Circ object", function() {
+				expect(circ.constructor).toBe(A11yMap.Circ);
+			});
+			it("creates a circ object in the map when the circ is instantiated",
+			   function(){
+			   expect($("#puppiesMap area[shape=circ]")).not.toExist();   
+			   expect($("#kittiesMap area[shape=circ]")).toExist();   
+			});
+			it("sets the area coordinates when passed in", function() {
+				expect($("#kittiesMap area:first")).toHaveAttr("coords", "3,2,1");
+			});
+			it("sets the CSS of the area to match its coordinates", function() {
+				//expect($("#kittiesMap area:first")).toHaveCss("display", "block"); //always reports as inline
+				expect($("#kittiesMap area:first")).toHaveCss("top", "1px");
+				expect($("#kittiesMap area:first")).toHaveCss("left", "2px");
+				expect($("#kittiesMap area:first")).toHaveCss("width", "2px"); //2x radius
+				expect($("#kittiesMap area:first")).toHaveCss("height", "2px");
+			});
+			it("sets the text on focus to the specified text", function() {
+				$("#kittiesMap area:first").focus();
+				expect($canvas.find("[aria-live]")).toHaveText("bar");
 			});
 		});
 	});
@@ -161,6 +205,84 @@ function(){
 				expect($(rect.element)).toHaveAttr("coords", "1,2,0,0");
 			});
 			it("does not resize past the bottom or right border", function() {
+				rect.resize(1000, 0);
+				expect($(rect.element)).toHaveAttr("coords", "1,2,599,4");
+				rect.resize(0, 1000);
+				expect($(rect.element)).toHaveAttr("coords", "1,2,599,399");
+			});
+
+		});
+				 
+		describe("#remove", function() {
+			it("is a prototype function of Rect", function() {
+				expect(typeof A11yMap.Rect.prototype.remove).toBe("function");
+			});
+			it("removes the area from the image map", function() {
+				rect.remove();
+				expect($("area", kittiesmap)).not.toExist();
+			});
+		});
+	});
+	describe("class A11yMap.Circ", function(){
+		beforeEach(function() {
+			circ = kittiesmap.circ(3, 2, 1);//x1, y1, x2, y2
+		});
+		afterEach(function(){
+			$(circ.element).remove();
+		});
+		describe("constructor", function() {
+			it("is covered by A11yMap.prototype.circ tests");
+		});
+		describe("#move", function() {
+			it("has a prototype function move", function(){
+				expect(typeof window.A11yMap.Circ.prototype.move).toBe("function");
+			});
+					 
+			it("moves the circ right and down with positive values", function() {
+				   circ.move(3, 3);
+				   expect($(circ.element)).toHaveAttr("coords", "6,5,1");
+			});
+			
+			it("moves the circ left and up with negative values", function(){
+				circ.move(-1, -1);
+				   expect($(circ.element)).toHaveAttr("coords", "2,1,1");
+			});
+					 
+		    it("does not move past the top or left border", function() {
+				circ.move(-100, 0);
+				expect($(circ.element)).toHaveAttr("coords", "1,2,1"); //center-x/y never is less than the radius
+				circ.move(0, -100);
+				expect($(circ.element)).toHaveAttr("coords", "3,1,1");
+			});
+					 
+			it("does not move past the right or bottom border", function() {
+				circ.move(1000, 0);
+				expect($(circ.element)).toHaveAttr("coords", "598,2,1");
+				circ.move(0, 1000);
+				expect($(circ.element)).toHaveAttr("coords", "3,398,1");
+			});
+		});
+		describe("#resize", function(){
+			it("has a prototype function resize", function(){
+			   expect(typeof A11yMap.Circ.prototype.resize).toBe("function");
+			});	 
+					 
+			it("increases circ size with positive inputs", function(){
+				circ.resize(1);
+				expect($(circ.element)).toHaveAttr("coords", "3,2,2");	
+			});
+					 
+			it("decreases circ size with negative inputs", function(){
+				rect.resize(-1);
+				expect($(rect.element)).toHaveAttr("coords", "3,2,0");
+			});
+					 
+			it("does not resize negatively past zero radius", function() {
+				rect.resize(-100);
+				expect($(rect.element)).toHaveAttr("coords", "3,2,0");
+			});
+			it("does not resize positively past any border", function() {
+				//TODO this is where you left off converting the Rect functions
 				rect.resize(1000, 0);
 				expect($(rect.element)).toHaveAttr("coords", "1,2,599,4");
 				rect.resize(0, 1000);

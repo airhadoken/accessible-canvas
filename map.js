@@ -16,14 +16,21 @@ window.A11yMap = function A11yMap(id, canvas) {
 		return oldMap.data("a11yMap");
 	}
 
+	this.id = id;
+
+	var container = $(document.body);
+
 	this.mapElement = $("<map></map>")
 		.attr("id", id + "Map")
 		.attr("name", id + "Map")
-		.appendTo(document.body)
+		.attr("role", "application")
+		.appendTo(container)
 	    .css("position", "absolute")
-	    .css("display", "block")
-	    .css("width", $(canvas).width() + "px")
-	    .css("height", $(canvas).height() + "px")
+	    .css({"display": "block",
+			  "width": ($(canvas).width() || 0) + "px",
+			  "height": ($(canvas).height() || 0) + "px",
+			  "left": "0px",
+			  "top": "0px"})
 		.attr("width", $(canvas).width())
 		.attr("height", $(canvas).height())
 		.click(function(ev){
@@ -42,17 +49,36 @@ window.A11yMap = function A11yMap(id, canvas) {
 		//.css({"position" : canvas ? "absolute" : "static",
 		//	  "top" : canvas ? $(canvas).offset().top + "px" : "0px",
 	//		  "left" : canvas ? $(canvas).offset().left + "px" : "0px" })
-		.appendTo(document.body)[0];
+		.appendTo(container)[0];
 
-return this;	
+		$(canvas).html("<div id='" + id + "Notifer' class='readout' aria-live='rude'></div>")
+		this.getCanvas = function() { return canvas; };
+
+	return this;	
 };
 
-A11yMap.Rect = function(map, x1, y1, x2, y2) {
+A11yMap.prototype.notifySR = function(text) {
+	$("#" + this.id + "Notifer").text(text);
+}
+
+A11yMap.Area = function(map) {
+	this.map = map;
+	return this;
+}
+
+A11yMap.Area.prototype.focus = function() {
+	$(this.element).focus();
+}
+
+A11yMap.Rect = function(map, x1, y1, x2, y2, text) {
     //if(x1 > x2) swap the Xs
+//    this.constructor.constructor
+	A11yMap.Area.apply(this, arguments);
 
 	var rj = $("<area shape='rect'></area>")
 				 .attr("coords", $.makeArray(arguments).slice(1,5).join(','))
 				 .attr("href", "javascript://")
+				 .attr("aria-labelledby", "#" + map.id + "Notifier")
 				 .attr("tabindex", "0")
 				 .css("display", "block")
 	             .css("position", "absolute")
@@ -70,9 +96,16 @@ A11yMap.Rect = function(map, x1, y1, x2, y2) {
 						 $(ev.target).trigger(nev);
 					 }
 				 })
+				 .focus(function(){
+				 	$(map.getCanvas).find(".readout").text(text);
+				 })
+				 .mouseover(function(){
+				 	$(this).trigger("focus");
+				 })
 				 .data("a11yMapRect", this);
 	this.element = rj[0];
-	this.map = map;
+	this.constructor.constructor = A11yMap.Area
+	this.__proto__.__proto__ = A11yMap.Area.prototype;
 	return this;
 };
 
@@ -97,6 +130,14 @@ A11yMap.Rect.prototype.move = function(x, y) {
 	this.element.setAttribute("coords", coords.join(","));
 };
 
+A11yMap.Rect.prototype.setX = function(x) {
+	this.move(x - this.element.getAttribute("coords").split(",")[0], 0);
+}
+
+A11yMap.Rect.prototype.setY = function(x) {
+	this.move(0, y - this.element.getAttribute("coords").split(",")[1]);
+}
+
 A11yMap.Rect.prototype.resize = function(w, h) {
 	var coords = this.element.getAttribute("coords").split(",");
 	w = (w || 0);
@@ -117,7 +158,50 @@ A11yMap.Rect.prototype.remove = function() {
 	delete this;
 };
 
-A11yMap.prototype.rect = function(x1, x2, y1, y2) {
+A11yMap.prototype.rect = function(x1, x2, y1, y2, text) {
 	if(arguments.length < 4) throw "ERROR: rect requires four arguments";
-	return new A11yMap.Rect(this, x1, x2, y1, y2);
+	return new A11yMap.Rect(this, x1, x2, y1, y2, text);
+};
+
+A11yMap.Circ = function(map, x1, y1, r, text) {
+	A11yMap.Area.apply(this, arguments);
+
+	var cj = $("<area shape='circ'></area>")
+				 .attr("coords", $.makeArray(arguments).slice(1,4).join(','))
+				 .attr("href", "javascript://")
+				 .attr("aria-labelledby", "#" + map.id + "Notifier")
+				 .attr("tabindex", "0")
+				 .css("display", "block")
+	             .css("position", "absolute")
+				 .css("left", (x1 - r) + "px")
+				 .css("top", (y1 - r) + "px")
+				 .css("height", (r * 2) + "px")
+				 .css("width", (r * 2) + "px")
+				 .appendTo(map.mapElement)
+				 .keydown(function(ev){
+					 if(ev.target.tagName.toLowerCase() === "area" 
+						&& ev.keyCode === 13) {
+						 var nev = new $.Event("click");
+						 nev.pageX = map.imgElement.offsetLeft + r;
+						 nev.pageY = map.imgElement.offsetTop + r;
+						 $(ev.target).trigger(nev);
+					 }
+				 })
+				 .focus(function(){
+				 	$(map.getCanvas).find(".readout").text(text);
+				 })
+				 .mouseover(function(){
+				 	$(this).trigger("focus");
+				 })
+				 .data("a11yMapCirc", this);
+	this.element = cj[0];
+	//this.__proto__ = new A11yMap.Area(map);
+	return this;
+	this.constructor.constructor = A11yMap.Area
+	this.__proto__.__proto__ = A11yMap.Area.prototype;
+};
+
+A11yMap.prototype.circ = function(x1, y1, r, text) {
+	if(arguments.length < 3) throw "ERROR: circ requires three arguments";
+	return new A11yMap.Circ(this, x1, y1, r, text);
 };
