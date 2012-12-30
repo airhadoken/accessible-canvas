@@ -64,10 +64,8 @@ function(){
 				expect(called.pageY).toBe(100 + $canvas.offset().top);
 			});
 
-			it("puts the image and map into application-role container", function() {
-				expect($("#kittiesContainer")).toHaveAttr("role", "application");
-				expect($("#kittiesContainer #kittiesMap")).toExist();
-				expect($("#kittiesContainer #kittiesPane")).toExist();
+			it("puts the map into application mode", function() {
+				expect($("#kittiesMap")).toHaveAttr("role", "application");
 			});
 		});
 				 
@@ -251,13 +249,15 @@ function(){
 		    it("does not move past the top or left border", function() {
 				circ.move(-100, 0);
 				expect($(circ.element)).toHaveAttr("coords", "1,2,1"); //center-x/y never is less than the radius
-				circ.move(0, -100);
+				circ.move(2, -100);
 				expect($(circ.element)).toHaveAttr("coords", "3,1,1");
 			});
 					 
-			it("does not move past the right or bottom border", function() {
+			it("does not move past the right border", function() {
 				circ.move(1000, 0);
 				expect($(circ.element)).toHaveAttr("coords", "598,2,1");
+			});
+			it("does not move past the bottom border", function() {
 				circ.move(0, 1000);
 				expect($(circ.element)).toHaveAttr("coords", "3,398,1");
 			});
@@ -273,30 +273,29 @@ function(){
 			});
 					 
 			it("decreases circ size with negative inputs", function(){
-				rect.resize(-1);
-				expect($(rect.element)).toHaveAttr("coords", "3,2,0");
+				circ.resize(-1);
+				expect($(circ.element)).toHaveAttr("coords", "3,2,0");
 			});
 					 
 			it("does not resize negatively past zero radius", function() {
-				rect.resize(-100);
-				expect($(rect.element)).toHaveAttr("coords", "3,2,0");
+				circ.resize(-100);
+				expect($(circ.element)).toHaveAttr("coords", "3,2,0");
 			});
 			it("does not resize positively past any border", function() {
-				//TODO this is where you left off converting the Rect functions
-				rect.resize(1000, 0);
-				expect($(rect.element)).toHaveAttr("coords", "1,2,599,4");
-				rect.resize(0, 1000);
-				expect($(rect.element)).toHaveAttr("coords", "1,2,599,399");
+				circ.resize(1000, 0);
+				expect($(circ.element)).toHaveAttr("coords", "3,2,2");
+				circ.resize(0, 1000);
+				expect($(circ.element)).toHaveAttr("coords", "3,2,2");
 			});
 
 		});
 				 
 		describe("#remove", function() {
-			it("is a prototype function of Rect", function() {
-				expect(typeof A11yMap.Rect.prototype.remove).toBe("function");
+			it("is a prototype function of Circ", function() {
+				expect(typeof A11yMap.Circ.prototype.remove).toBe("function");
 			});
 			it("removes the area from the image map", function() {
-				rect.remove();
+				circ.remove();
 				expect($("area", kittiesmap)).not.toExist();
 			});
 		});

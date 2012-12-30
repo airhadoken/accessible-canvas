@@ -70,6 +70,12 @@ A11yMap.Area.prototype.focus = function() {
 	$(this.element).focus();
 }
 
+
+A11yMap.Area.prototype.remove = function() {
+	$(this.element).remove();
+	delete this;
+};
+
 A11yMap.Rect = function(map, x1, y1, x2, y2, text) {
     //if(x1 > x2) swap the Xs
 //    this.constructor.constructor
@@ -153,10 +159,6 @@ A11yMap.Rect.prototype.resize = function(w, h) {
 	this.element.setAttribute("coords", coords.join(","));	
 };
 
-A11yMap.Rect.prototype.remove = function() {
-	$(this.element).remove();
-	delete this;
-};
 
 A11yMap.prototype.rect = function(x1, x2, y1, y2, text) {
 	if(arguments.length < 4) throw "ERROR: rect requires four arguments";
@@ -196,9 +198,42 @@ A11yMap.Circ = function(map, x1, y1, r, text) {
 				 .data("a11yMapCirc", this);
 	this.element = cj[0];
 	//this.__proto__ = new A11yMap.Area(map);
-	return this;
 	this.constructor.constructor = A11yMap.Area
 	this.__proto__.__proto__ = A11yMap.Area.prototype;
+	return this;
+};
+
+A11yMap.Circ.prototype.move = function(x, y) {
+	var coords = this.element.getAttribute("coords").split(",");
+	$(coords).each(function(i){ coords[i] = +(coords[i]); }); //integer conversion
+	var minx = coords[0] - coords[2];
+	var miny = coords[1] - coords[2];
+	var maxx = coords[0] + coords[2];
+	var maxy = coords[1] + coords[2];
+	x = (x || 0);
+	if(x < -minx) x = -minx;
+	if(x + maxx >= +($(this.map.imgElement).width())) x = +($(this.map.imgElement).width())- maxx - 1;
+	y = (y || 0);
+	if(y < -miny) y = -miny;
+	if(y + maxy >= +($(this.map.imgElement).height())) y = +($(this.map.imgElement).height())- maxy - 1;
+	
+	coords[0] += x;
+	coords[1] += y;
+	this.element.setAttribute("coords", coords.join(","));
+};
+
+A11yMap.Circ.prototype.resize = function(r) {
+	var coords = this.element.getAttribute("coords").split(",");
+	r = (+r || 0) + coords[2];
+	r = Math.max(0, r);
+	$(coords).each(function(i){ coords[i] = +(coords[i]); }); //integer conversion
+	if(coords[0] < r) r = coords[0];
+	if(coords[0] + r >= +($(this.map.imgElement).width())) r = +($(this.map.imgElement).width()) - coords[0] - 1;
+	if(coords[1] < r) r = coords[1];
+	if(coords[1] + r >= +($(this.map.imgElement).height())) h = +($(this.map.imgElement).height())- coords[1] - 1;
+	
+	coords[2] = r;
+	this.element.setAttribute("coords", coords.join(","));	
 };
 
 A11yMap.prototype.circ = function(x1, y1, r, text) {
