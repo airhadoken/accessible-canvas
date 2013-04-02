@@ -51,14 +51,20 @@ window.A11yMap = function A11yMap(id, canvas) {
 	//		  "left" : canvas ? $(canvas).offset().left + "px" : "0px" })
 		.appendTo(container)[0];
 
-		$(canvas).html("<div id='" + id + "Notifer' class='readout' aria-live='rude'></div>")
+		$(document.body).append("<div id='" + id + "Notifier' class='readout' aria-live='rude'></div>")
 		this.getCanvas = function() { return canvas; };
 
 	return this;	
 };
 
 A11yMap.prototype.notifySR = function(text) {
-	$("#" + this.id + "Notifer").text(text);
+  if(this.sr_timeout) {
+    clearTimeout(this.sr_timeout);
+  }
+  var that = this;
+  this.sr_timeout = setTimeout(function() {
+  	$("#" + that.id + "Notifier").text(text);
+  }, 300);
 }
 
 A11yMap.Area = function(map) {
@@ -100,10 +106,11 @@ A11yMap.Rect = function(map, x1, y1, x2, y2, text) {
 						 nev.pageX = map.imgElement.offsetLeft + (x1 + x2) / 2;
 						 nev.pageY = map.imgElement.offsetTop + (y1 + y2) / 2;
 						 $(ev.target).trigger(nev);
+             ev.preventDefault();
 					 }
 				 })
 				 .focus(function(){
-				 	$(map.getCanvas).find(".readout").text(text);
+				 	$("#" + map.id + "Notifier").text(text);
 				 })
 				 .mouseover(function(){
 				 	$(this).trigger("focus");
@@ -190,7 +197,7 @@ A11yMap.Circ = function(map, x1, y1, r, text) {
 					 }
 				 })
 				 .focus(function(){
-				 	$(map.getCanvas).find(".readout").text(text);
+          $("#" + this.id + "Notifier").text(text);
 				 })
 				 .mouseover(function(){
 				 	$(this).trigger("focus");

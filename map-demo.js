@@ -41,7 +41,7 @@
 	var sliderPct = 50;
 	drawSlider(sliderPct);
 
-	var $readout = $("<div aria-live='rude'></div>").appendTo(document.body);
+	///var $readout = $("<div aria-live='rude'></div>").appendTo(document.body);
 
 	$("#testcanvas").click(function(ev) {
 		var offset = $(this).offset(); 
@@ -50,9 +50,9 @@
 	     && ev.pageY - offset.top >= 200
 	     && ev.pageY - offset.top <= 250) {
 		  
-			$readout.text("click on yellow button registered");
-		}
-	});
+			map.notifySR("click on yellow button registered");
+    }
+  });
 	$("#testMap").find("area")
 
 	$(rect1.element).bind("keydown.right", function() {
@@ -66,8 +66,7 @@
 		drawSlider(sliderPct);
 		slider.move(1, 0);
 		map.notifySR(sliderPct + " percent");
-	});
-	$(slider.element).bind("keydown.down", function() {
+	}).bind("keydown.down", function() {
 		sliderPct --;
 		drawSlider(sliderPct);
 		slider.move(-1, 0);
